@@ -1,4 +1,5 @@
 import sys
+import os
 from rich.panel import Panel
 from src.library import Library
 from src import ui
@@ -130,6 +131,94 @@ def main():
             ui.display_books(results)
             input("Нажмите Enter...")
 
+        elif choice == '8':
+            clear_screen()
+            stats = lib.get_statistics()
+            console.print("[bold cyan]Статистика библиотеки[/bold cyan]")
+            if stats['total'] == 0:
+                console.print("[yellow]Библиотека пуста.[/yellow]")
+            else:
+                console.print(f"Всего книг: {stats['total']}")
+                console.print(f"Прочитано: {stats['read']} ({stats['read']/stats['total']*100:.1f}%)")
+                console.print(f"Не прочитано: {stats['unread']}")
+                console.print(f"В избранном: {stats['favorites']}")
+                if stats['favorite_genre']:
+                    console.print(f"Любимый жанр (по избранным): {stats['favorite_genre']}")
+                else:
+                    console.print("Любимый жанр: пока нет избранных книг.")
+            input("Нажмите Enter...")
+
+        elif choice == '9':
+            clear_screen()
+            console.print("[bold]Импорт книг из другой библиотеки[/bold]")
+            filepath = input("Введите полный или относительный путь к JSON-файлу: ").strip()
+            if not filepath:
+                ui.display_message("Импорт отменён.", "yellow")
+                input("Нажмите Enter...")
+                continue
+
+            try:
+                added, skipped = lib.import_books(filepath)
+                ui.display_message(f"Импорт завершён. Добавлено: {added}, пропущено дубликатов/ошибок: {skipped}", "green")
+            except Exception as e:
+                ui.display_message(f"Ошибка импорта: {e}", "red")
+            input("Нажмите Enter...")
+
+        elif choice == '10':
+            try:
+                book_id = int(input("Введите ID книги для корректировки: ").strip())
+            except ValueError:
+                ui.display_message("ID должен быть числом.", style="red")
+                input("Нажмите Enter...")
+                continue
+
+            book = lib.find_by_id(book_id)
+            if not book:
+                ui.display_message(f"Книга с ID {book_id} не найдена.", style="red")
+                input("Нажмите Enter...")
+                continue
+
+            console.print("[bold cyan]Текущие данные книги:[/bold cyan]")
+            console.print(f"Название: {book.title}")
+            console.print(f"Автор: {book.author}")
+            console.print(f"Жанр: {book.genre}")
+            console.print(f"Год: {book.year}")
+            console.print(f"Описание: {book.description}")
+            console.print(f"Статус прочтения: {'прочитана' if book.read else 'не прочитана'}")
+            console.print(f"В избранном: {'да' if book.favorite else 'нет'}")
+            console.print()
+
+            new_title = input(f"Новое название [{book.title}]: ").strip()
+            new_author = input(f"Новый автор [{book.author}]: ").strip()
+            new_genre = input(f"Новый жанр [{book.genre}]: ").strip()
+            new_year_str = input(f"Новый год [{book.year}]: ").strip()
+            new_description = input(f"Новое описание [{book.description}]: ").strip()
+
+            updates = {}
+            if new_title:
+                updates['title'] = new_title
+            if new_author:
+                updates['author'] = new_author
+            if new_genre:
+                updates['genre'] = new_genre
+            if new_year_str:
+                try:
+                    updates['year'] = int(new_year_str)
+                except ValueError:
+                    ui.display_message("Год должен быть числом. Поле не будет изменено.", "yellow")
+            if new_description:
+                updates['description'] = new_description
+
+            if not updates:
+                ui.display_message("Нет изменений.", "yellow")
+            else:
+                success = lib.update_book(book_id, **updates)
+                if success:
+                    ui.display_message("Книга успешно обновлена.", "green")
+                else:
+                    ui.display_message("Ошибка при обновлении.", "red")
+            input("Нажмите Enter...")
+
         elif choice == '0':
             ui.display_message("До свидания!", style="cyan")
             sys.exit(0)
@@ -139,4 +228,4 @@ def main():
             input("Нажмите Enter...")
 
 if __name__ == "__main__":
-    main()  
+    main()

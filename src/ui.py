@@ -12,6 +12,9 @@ def show_menu():
 [bold cyan]5.[/bold cyan] Показать избранные книги
 [bold cyan]6.[/bold cyan] Удалить книгу
 [bold cyan]7.[/bold cyan] Поиск книг
+[bold cyan]8.[/bold cyan] Статистика
+[bold cyan]9.[/bold cyan] Импорт книг из другой библиотеки
+[bold cyan]10.[/bold cyan] Корректировка книги по ID
 [bold cyan]0.[/bold cyan] Выход
 """
     console.print(Panel(menu_text, title=" T-Библиотека ", subtitle="Ваша личная коллекция", box=box.DOUBLE_EDGE))
@@ -69,4 +72,4 @@ def display_message(message, style="green"):
         "cyan": "bold cyan",
         "blue": "bold blue"
     }
-    console.print(f"[{styles.get(style, style)}]{message}[/{styles.get(style, style)}]")    
+    console.print(f"[{styles.get(style, style)}]{message}[/{styles.get(style, style)}]")
